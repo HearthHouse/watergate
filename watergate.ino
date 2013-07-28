@@ -1,11 +1,8 @@
 #include <EtherCard.h>
 
-static byte myip[] = { 
-  192,168,13,95 };
-static byte gwip[] = { 
-  192,168,13,1 };
-static byte mymac[] = {  
-  0xDE,0xAD,0x69,0x2D,0x30,0x31 };
+static byte myip[] = { 192,168,13,95 };
+static byte gwip[] = { 192,168,13,1 };
+static byte mymac[] = { 0xDE,0xAD,0x69,0x2D,0x30,0x31 };
 
 byte Ethernet::buffer[500]; // tcp/ip send and receive buffer
 static BufferFiller bfill;  // used as cursor while filling the buffer
@@ -15,10 +12,18 @@ static BufferFiller bfill;  // used as cursor while filling the buffer
 #define PIN_ON A1  // orbit valve. pulse PIN_ON for on, pulse PIN_OFF for off
 #define PIN_OFF A2
 
+#define BUTTON_ORBIT 1
+#define BUTTON_SF 2
+
 int orbit_status = -1;
 int sf_status = -1;
 
 void setup() {
+  pinMode(BUTTON_SF, OUTPUT);
+  pinMode(BUTTON_ORBIT, OUTPUT);
+  digitalWrite(BUTTON_ORBIT, HIGH);
+  digitalWrite(BUTTON_SF, HIGH);
+
   pinMode(A0, OUTPUT);
   pinMode(A1, OUTPUT);
   pinMode(A2, OUTPUT);
@@ -46,9 +51,7 @@ void loop() {
   if (pos) {
     bfill = ether.tcpOffset();
     char* data = (char *) Ethernet::buffer + pos;
-#if SERIAL
     Serial.println(data);
-#endif
     // receive buf hasn't been clobbered by reply yet
     if (strncmp("GET /orbit/on", data, 13) == 0)
       orbit_on();
@@ -66,6 +69,22 @@ void loop() {
     emit_status(sf_status, bfill);
 
     ether.httpServerReply(bfill.position()); // send web page data
+  }
+
+  if (digitalRead(BUTTON_ORBIT) == 0) {
+    if (orbit_status) {
+      orbit_off();
+    } else {
+      orbit_on();
+    }
+  }
+
+  if (digitalRead(BUTTON_SF) == 0) {
+    if (sf_status) {
+      sf_off();
+    } else {
+      sf_on();
+    }
   }
 }
 
@@ -103,4 +122,3 @@ void sf_off() {
   digitalWrite(PIN_SF, LOW);
   sf_status = 0;
 }
-
