@@ -24,12 +24,12 @@ void setup() {
   digitalWrite(BUTTON_ORBIT, HIGH);
   digitalWrite(BUTTON_SF, HIGH);
 
-  pinMode(A0, OUTPUT);
-  pinMode(A1, OUTPUT);
-  pinMode(A2, OUTPUT);
-  digitalWrite(A0, LOW);
-  digitalWrite(A1, LOW);
-  digitalWrite(A2, LOW);
+  pinMode(PIN_SF, OUTPUT);
+  pinMode(PIN_ON, OUTPUT);
+  pinMode(PIN_OFF, OUTPUT);
+  digitalWrite(PIN_SF, LOW);
+  digitalWrite(PIN_ON, LOW);
+  digitalWrite(PIN_OFF, LOW);
 
   Serial.begin(57600);
   Serial.println("\n[backSoon]");
