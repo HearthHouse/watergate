@@ -18,6 +18,18 @@ static BufferFiller bfill;  // used as cursor while filling the buffer
 int orbit_status = -1;
 int sf_status = -1;
 
+char okHeader[] PROGMEM =
+    "HTTP/1.1 200 OK\r\n"
+    "Content-Type: text/html\r\n"
+    "Pragma: no-cache\r\n"
+;
+
+char redirectHeader[] PROGMEM =
+    "HTTP/1.1 302\r\n"
+    "Pragma: no-cache\r\n"
+    "Location: /\r\n"
+;
+
 void setup() {
   pinMode(BUTTON_SF, OUTPUT);
   pinMode(BUTTON_ORBIT, OUTPUT);
@@ -61,14 +73,27 @@ void loop() {
       sf_on();
     else if (strncmp("GET /sf/off", data, 11) == 0)
       sf_off();
+    else {
+      bfill.emit_p(PSTR("$F\r\n"
+          "<style> button a { font-size: 30px; }</style>"
+          "<body>"
+          ), okHeader);
+      bfill.emit_p(PSTR("<br>orbit: "));
+      emit_status(orbit_status, bfill);
+      bfill.emit_p(PSTR("<br><button><a href=/orbit/on>Orbit on</a></button>"
+                        "<button><a href=/orbit/off>Orbit off</a></button>"));
 
-    bfill.emit_p(PSTR("\norbit: "));
-    emit_status(orbit_status, bfill);
+      bfill.emit_p(PSTR("<br><br>sf: "));
+      emit_status(sf_status, bfill);
+      bfill.emit_p(PSTR("<br><button><a href=/sf/on>SF on</a></button>"
+                        "<button><a href=/sf/off>SF off</a></button>"
+                        "</body>"));
+      ether.httpServerReply(bfill.position()); // send web page data
+      return;
+    }
 
-    bfill.emit_p(PSTR("\nsf: "));
-    emit_status(sf_status, bfill);
-
-    ether.httpServerReply(bfill.position()); // send web page data
+    bfill.emit_p(PSTR("$F\r\n"), redirectHeader);
+    ether.httpServerReply(bfill.position()); // redirect to /
   }
 
   if (digitalRead(BUTTON_ORBIT) == 0) {
