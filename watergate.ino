@@ -1,7 +1,7 @@
 #include <EtherCard.h>
 
-static byte myip[] = { 192,168,13,95 };
-static byte gwip[] = { 192,168,13,1 };
+static byte myip[] = { 192,168,1,95 };
+static byte gwip[] = { 192,168,1,1 };
 static byte mymac[] = { 0xDE,0xAD,0x69,0x2D,0x30,0x31 };
 
 byte Ethernet::buffer[500]; // tcp/ip send and receive buffer
