@@ -97,6 +97,7 @@ void loop() {
   }
 
   if (digitalRead(BUTTON_ORBIT) == 0) {
+    Serial.println("Orbit button");
     if (orbit_status) {
       orbit_off();
     } else {
@@ -105,6 +106,7 @@ void loop() {
   }
 
   if (digitalRead(BUTTON_SF) == 0) {
+    Serial.println("SF button");
     if (sf_status) {
       sf_off();
     } else {
@@ -123,11 +125,13 @@ void emit_status(int water_status, BufferFiller& buf) {
 }
 
 void orbit_on() {
+  Serial.println("Orbit on");
   pulse(PIN_ON);
   orbit_status = 1;
 }
 
 void orbit_off() {
+  Serial.println("Orbit off");
   pulse(PIN_OFF);
   orbit_status = 0;
 }
@@ -139,11 +143,13 @@ void pulse(int pin) {
 }
 
 void sf_on() {
+  Serial.println("SF on");
   digitalWrite(PIN_SF, HIGH);
   sf_status = 1;
 }
 
 void sf_off() {
+  Serial.println("SF off");
   digitalWrite(PIN_SF, LOW);
   sf_status = 0;
 }
