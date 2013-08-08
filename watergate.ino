@@ -1,5 +1,5 @@
 #include <EtherCard.h>
-
+#include "button.h"
 static byte myip[] = { 192,168,1,95 };
 static byte gwip[] = { 192,168,1,1 };
 static byte mymac[] = { 0xDE,0xAD,0x69,0x2D,0x30,0x31 };
@@ -14,6 +14,9 @@ static BufferFiller bfill;  // used as cursor while filling the buffer
 
 #define BUTTON_ORBIT 3
 #define BUTTON_SF 2
+
+Button orbit_button = Button(BUTTON_ORBIT);
+Button sf_button = Button(BUTTON_SF);
 
 int orbit_status = -1;
 int sf_status = -1;
@@ -31,11 +34,6 @@ char redirectHeader[] PROGMEM =
 ;
 
 void setup() {
-  pinMode(BUTTON_SF, OUTPUT);
-  pinMode(BUTTON_ORBIT, OUTPUT);
-  digitalWrite(BUTTON_ORBIT, HIGH);
-  digitalWrite(BUTTON_SF, HIGH);
-
   pinMode(PIN_SF, OUTPUT);
   pinMode(PIN_ON, OUTPUT);
   pinMode(PIN_OFF, OUTPUT);
@@ -96,7 +94,7 @@ void loop() {
     ether.httpServerReply(bfill.position()); // redirect to /
   }
 
-  if (digitalRead(BUTTON_ORBIT) == 0) {
+  if (orbit_button.pressed()) {
     Serial.println("Orbit button");
     if (orbit_status) {
       orbit_off();
@@ -105,7 +103,7 @@ void loop() {
     }
   }
 
-  if (digitalRead(BUTTON_SF) == 0) {
+  if (sf_button.pressed()) {
     Serial.println("SF button");
     if (sf_status) {
       sf_off();
