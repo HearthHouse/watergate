@@ -4,7 +4,7 @@ static byte myip[] = { 192,168,1,95 };
 static byte gwip[] = { 192,168,1,1 };
 static byte mymac[] = { 0xDE,0xAD,0x69,0x2D,0x30,0x31 };
 
-byte Ethernet::buffer[500]; // tcp/ip send and receive buffer
+byte Ethernet::buffer[1024]; // tcp/ip send and receive buffer
 static BufferFiller bfill;  // used as cursor while filling the buffer
 
 #define PIN_SF A0 // sparkfun valve. set PIN_SF high for on, low for off
@@ -73,19 +73,19 @@ void loop() {
       sf_off();
     else {
       bfill.emit_p(PSTR("$F\r\n"
-          "<style> button a { font-size: 30px; }</style>"
-          "<body>"
+        "<head><style> body, a { font-size: 5em; } table, button { width: 100%; }"
+        ".on { background-color: green; } .off { background-color: red; }"
+        "</style></head><body><table><tr><td>orbit</td><td>garden</td></tr>"
+        "<tr><td><button class='on'><a href=/orbit/on/10>on</a></button></td>"
+        "<td><button class='on'><a href=/sf/on/10>on</a></button></td></tr>"
+        "<tr><td><button class='off'><a href=/orbit/off>off</a></button></td>"
+        "<td><button class='off'><a href=/sf/off>off</a></button></td></tr>"
+        "<tr><td>"
           ), okHeader);
-      bfill.emit_p(PSTR("<br>orbit: "));
       emit_status(orbit_status, bfill);
-      bfill.emit_p(PSTR("<br><button><a href=/orbit/on>Orbit on</a></button>"
-                        "<button><a href=/orbit/off>Orbit off</a></button>"));
-
-      bfill.emit_p(PSTR("<br><br>sf: "));
+      bfill.emit_p(PSTR("</td><td>"));
       emit_status(sf_status, bfill);
-      bfill.emit_p(PSTR("<br><button><a href=/sf/on>SF on</a></button>"
-                        "<button><a href=/sf/off>SF off</a></button>"
-                        "</body>"));
+      bfill.emit_p(PSTR("</td></tr></table></body>"));
       ether.httpServerReply(bfill.position()); // send web page data
       return;
     }
