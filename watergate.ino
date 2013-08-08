@@ -20,6 +20,9 @@ Button sf_button = Button(BUTTON_SF);
 
 int orbit_status = -1;
 int sf_status = -1;
+unsigned long orbit_timeout = 0;
+unsigned long sf_timeout = 0;
+unsigned long time = 0;
 
 char okHeader[] PROGMEM =
     "HTTP/1.1 200 OK\r\n"
@@ -55,6 +58,15 @@ void setup() {
 }
 
 void loop() {
+  time = millis();
+  if (sf_timeout && time >= sf_timeout) {
+    sf_off();
+    sf_timeout = 0;
+  }
+  if (orbit_timeout && time >= orbit_timeout) {
+    orbit_off();
+    orbit_timeout = 0;
+  }
   word len = ether.packetReceive();
   word pos = ether.packetLoop(len);
   // check if valid tcp data is received
@@ -63,14 +75,20 @@ void loop() {
     char* data = (char *) Ethernet::buffer + pos;
     Serial.println(data);
     // receive buf hasn't been clobbered by reply yet
-    if (strncmp("GET /orbit/on", data, 13) == 0)
+    if (strncmp("GET /orbit/on", data, 13) == 0) {
       orbit_on();
-    else if (strncmp("GET /orbit/off", data, 14) == 0)
+      orbit_timeout = time + (unsigned long)atoi(data+14) * 60000;
+    }
+    else if (strncmp("GET /orbit/off", data, 14) == 0) {
       orbit_off();
-    else if (strncmp("GET /sf/on", data, 10) == 0)
+    }
+    else if (strncmp("GET /sf/on", data, 10) == 0) {
       sf_on();
-    else if (strncmp("GET /sf/off", data, 11) == 0)
+      sf_timeout = time + (unsigned long)atoi(data+11) * 60000;
+    }
+    else if (strncmp("GET /sf/off", data, 11) == 0) {
       sf_off();
+    }
     else {
       bfill.emit_p(PSTR("$F\r\n"
         "<head><style> td, a { font-size: 5em; } table, button { width: 100%; }"
@@ -113,13 +131,17 @@ void loop() {
   }
 */
 }
-void emit_status(int water_status, BufferFiller& buf) {
+void emit_status(int water_status, unsigned long timeout, BufferFiller& buf) {
   if (water_status == 0)
-    buf.emit_p(PSTR("OFF"));
+    buf.emit_p(PSTR("OFF "));
   else if (water_status == 1)
-    buf.emit_p(PSTR("ON"));
+    buf.emit_p(PSTR("ON "));
   else
-    buf.emit_p(PSTR("?"));
+    buf.emit_p(PSTR("? "));
+
+  if (timeout) {
+    buf.emit_p(PSTR("$F"), timeout - time);
+  }
 }
 
 void orbit_on() {
