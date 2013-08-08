@@ -12,7 +12,7 @@ static BufferFiller bfill;  // used as cursor while filling the buffer
 #define PIN_ON A1  // orbit valve. pulse PIN_ON for on, pulse PIN_OFF for off
 #define PIN_OFF A2
 
-#define BUTTON_ORBIT 1
+#define BUTTON_ORBIT 3
 #define BUTTON_SF 2
 
 int orbit_status = -1;
