@@ -93,7 +93,7 @@ void loop() {
     bfill.emit_p(PSTR("$F\r\n"), redirectHeader);
     ether.httpServerReply(bfill.position()); // redirect to /
   }
-
+/*
   if (orbit_button.pressed()) {
     Serial.println("Orbit button");
     if (orbit_status) {
@@ -111,8 +111,8 @@ void loop() {
       sf_on();
     }
   }
+*/
 }
-
 void emit_status(int water_status, BufferFiller& buf) {
   if (water_status == 0)
     buf.emit_p(PSTR("OFF"));
