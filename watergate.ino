@@ -73,9 +73,9 @@ void loop() {
       sf_off();
     else {
       bfill.emit_p(PSTR("$F\r\n"
-        "<head><style> body, a { font-size: 5em; } table, button { width: 100%; }"
+        "<head><style> td, a { font-size: 5em; } table, button { width: 100%; }"
         ".on { background-color: green; } .off { background-color: red; }"
-        "</style></head><body><table><tr><td>orbit</td><td>garden</td></tr>"
+        "</style></head><body><table><tr><td>hose</td><td>garden</td></tr>"
         "<tr><td><button class='on'><a href=/orbit/on/10>on</a></button></td>"
         "<td><button class='on'><a href=/sf/on/10>on</a></button></td></tr>"
         "<tr><td><button class='off'><a href=/orbit/off>off</a></button></td>"
