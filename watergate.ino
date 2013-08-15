@@ -24,11 +24,25 @@ unsigned long orbit_timeout = 0;
 unsigned long sf_timeout = 0;
 unsigned long time = 0;
 
-char okHeader[] PROGMEM =
+char okResponse[] PROGMEM =
     "HTTP/1.1 200 OK\r\n"
     "Content-Type: text/html\r\n"
-    "Pragma: no-cache\r\n"
+    "Pragma: no-cache\r\n\r\n"
+    "<head><style> td, a { font-size: 5em; } table, button { width: 100%; }"
+    ".on { background-color: green; } .off { background-color: red; }"
+    "</style></head><body><table><tr><td>garden $F</td><td>hose $F</td></tr>"
+    "<tr><td><button class='on'><a href=/orbit/on/10>on</a></button></td>"
+    "<td><button class='on'><a href=/sf/on/10>on</a></button></td></tr>"
+    "<tr><td><button class='off'><a href=/orbit/off>off</a></button></td>"
+    "<td><button class='off'><a href=/sf/off>off</a></button></td></tr>"
+    "<tr><td>$D</td><td>$D</td></tr></table></body>"
 ;
+
+char on[] PROGMEM = "ON";
+char off[] PROGMEM = "OFF";
+char unknown[] PROGMEM = "?";
+
+#define STATUS_STR(status_int) (status_int > 0 ? on : (status_int == 0 ? off : unknown))
 
 char redirectHeader[] PROGMEM =
     "HTTP/1.1 302\r\n"
@@ -90,20 +104,7 @@ void loop() {
       sf_off();
     }
     else {
-      bfill.emit_p(PSTR("$F\r\n"
-        "<head><style> td, a { font-size: 5em; } table, button { width: 100%; }"
-        ".on { background-color: green; } .off { background-color: red; }"
-        "</style></head><body><table><tr><td>hose</td><td>garden</td></tr>"
-        "<tr><td><button class='on'><a href=/orbit/on/10>on</a></button></td>"
-        "<td><button class='on'><a href=/sf/on/10>on</a></button></td></tr>"
-        "<tr><td><button class='off'><a href=/orbit/off>off</a></button></td>"
-        "<td><button class='off'><a href=/sf/off>off</a></button></td></tr>"
-        "<tr><td>"
-          ), okHeader);
-      emit_status(orbit_status, bfill);
-      bfill.emit_p(PSTR("</td><td>"));
-      emit_status(sf_status, bfill);
-      bfill.emit_p(PSTR("</td></tr></table></body>"));
+      bfill.emit_p(okResponse, STATUS_STR(orbit_status), STATUS_STR(sf_status), 1, 1);
       ether.httpServerReply(bfill.position()); // send web page data
       return;
     }
