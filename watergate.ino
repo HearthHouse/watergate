@@ -28,13 +28,13 @@ char okResponse[] PROGMEM =
     "HTTP/1.1 200 OK\r\n"
     "Content-Type: text/html\r\n"
     "Pragma: no-cache\r\n\r\n"
-    "<head><style> td, a { font-size: 5em; } table, button { width: 100%; }"
+    "<head><style> td, a { font-size: 5em; } table, .btn { display: block; }"
     ".on { background-color: green; } .off { background-color: red; }"
     "</style></head><body><table><tr><td>garden $F</td><td>hose $F</td></tr>"
-    "<tr><td><button class='on'><a href=/orbit/on/10>on</a></button></td>"
-    "<td><button class='on'><a href=/sf/on/10>on</a></button></td></tr>"
-    "<tr><td><button class='off'><a href=/orbit/off>off</a></button></td>"
-    "<td><button class='off'><a href=/sf/off>off</a></button></td></tr>"
+    "<tr><td><a class='btn on' href=/orbit/on/10>on</a></td>"
+        "<td><a class='btn on' href=/sf/on/10>on</a></td></tr>"
+    "<tr><td><a class='btn off' href=/orbit/off>off</a></td>"
+        "<td><a class='btn off' href=/sf/off>off</a></td></tr>"
     "<tr><td>$D</td><td>$D</td></tr></table></body>"
 ;
 
