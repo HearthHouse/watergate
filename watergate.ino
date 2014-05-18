@@ -104,7 +104,7 @@ void loop() {
       sf_off();
     }
     else {
-      bfill.emit_p(okResponse, STATUS_STR(orbit_status), STATUS_STR(sf_status), 1, 1);
+      bfill.emit_p(okResponse, STATUS_STR(orbit_status), STATUS_STR(sf_status), orbit_timeout - time, sf_timeout - time);
       ether.httpServerReply(bfill.position()); // send web page data
       return;
     }
