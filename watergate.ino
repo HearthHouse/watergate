@@ -15,6 +15,16 @@ static BufferFiller bfill;  // used as cursor while filling the buffer
 #define BUTTON_ORBIT 3
 #define BUTTON_SF 2
 
+#define DOORCLOSED 9 // angle when closed
+#define DOOROPEN 131 // angle when open
+#define DOORPIN 10 // pin for servo
+#define SERVODISABLE 13 // when HIGH servo is disabled
+
+#include <Servo.h>
+Servo doorServo;  // create servo object to control a servo
+int doorSpeed = 100;  // how many milliseconds delay between degrees
+byte position,lastPosition = DOOROPEN;
+
 Button orbit_button = Button(BUTTON_ORBIT);
 Button sf_button = Button(BUTTON_SF);
 
@@ -24,7 +34,7 @@ unsigned long orbit_timeout = 0;
 unsigned long sf_timeout = 0;
 unsigned long time = 0;
 
-char okResponse[] PROGMEM =
+const char okResponse[] PROGMEM =
     "HTTP/1.1 200 OK\r\n"
     "Content-Type: text/html\r\n"
     "Pragma: no-cache\r\n\r\n"
@@ -35,22 +45,29 @@ char okResponse[] PROGMEM =
         "<td><a class='btn on' href=/sf/on/10>on</a></td></tr>"
     "<tr><td><a class='btn off' href=/orbit/off>off</a></td>"
         "<td><a class='btn off' href=/sf/off>off</a></td></tr>"
-    "<tr><td>$D</td><td>$D</td></tr></table></body>"
+    "<tr><td>$D</td><td>$D</td></tr>" // times remaining for both waters
+    "<tr><td>door position is</td><td>$D</td></tr>"
+    "</table></body>"
 ;
 
-char on[] PROGMEM = "ON";
-char off[] PROGMEM = "OFF";
-char unknown[] PROGMEM = "?";
+const char on[] PROGMEM = "ON";
+const char off[] PROGMEM = "OFF";
+const char unknown[] PROGMEM = "?";
 
 #define STATUS_STR(status_int) (status_int > 0 ? on : (status_int == 0 ? off : unknown))
 
-char redirectHeader[] PROGMEM =
+const char redirectHeader[] PROGMEM =
     "HTTP/1.1 302\r\n"
     "Pragma: no-cache\r\n"
     "Location: /\r\n"
 ;
 
 void setup() {
+  pinMode(DOORPIN,OUTPUT);
+  pinMode(SERVODISABLE,OUTPUT);
+  digitalWrite(SERVODISABLE,HIGH);
+  doorServo.attach(DOORPIN);
+  doorServo.write(DOOROPEN);
   pinMode(PIN_SF, OUTPUT);
   pinMode(PIN_ON, OUTPUT);
   pinMode(PIN_OFF, OUTPUT);
@@ -103,8 +120,16 @@ void loop() {
     else if (strncmp("GET /sf/off", data, 11) == 0) {
       sf_off();
     }
+    else if (strncmp("GET /foodop", data, 11) == 0) {
+      position = DOOROPEN;
+      door(position);
+    }
+    else if (strncmp("GET /foodcl", data, 11) == 0) {
+      position = DOORCLOSED;
+      door(position);
+    }
     else {
-      bfill.emit_p(okResponse, STATUS_STR(orbit_status), STATUS_STR(sf_status), orbit_timeout - time, sf_timeout - time);
+      bfill.emit_p(okResponse, STATUS_STR(orbit_status), STATUS_STR(sf_status), orbit_timeout - time, sf_timeout - time, position);
       ether.httpServerReply(bfill.position()); // send web page data
       return;
     }
@@ -143,6 +168,21 @@ void emit_status(int water_status, unsigned long timeout, BufferFiller& buf) {
   if (timeout) {
     buf.emit_p(PSTR("$F"), timeout - time);
   }
+}
+
+void door(int angle) {
+  doorServo.write(angle);
+  digitalWrite(SERVODISABLE,LOW);
+  int step = 1; // must be 1 for "i != angle" to work
+  if (angle < lastPosition) step *= -1; // count the right direction
+  for(int i=lastPosition; i != angle;  i += step){
+    doorServo.write(i);
+    delay(doorSpeed);
+  }
+  doorServo.write(angle);
+  delay(1000); // wait for servo to arrive before disabling it
+  digitalWrite(SERVODISABLE,HIGH);
+  lastPosition = angle;
 }
 
 void orbit_on() {
